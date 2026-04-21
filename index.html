@@ -294,11 +294,11 @@ body::before { content:''; position:fixed; inset:0; background: radial-gradient(
 
       <div class="section-label" style="margin-bottom:8px;margin-top:20px">API KLICE</div>
       <div style="background:rgba(0,255,200,0.06);border:1px solid rgba(0,255,200,0.2);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.6">
-        &#10003; <strong style="color:var(--accent)">Claude</strong> funguje bez klice &mdash; je zabudovany.
+        Chat funguje pres <strong style="color:var(--accent)">OpenRouter</strong> &mdash; zdarma na openrouter.ai
       </div>
-      <div class="settings-item" id="btnOpenaiKey">
+      <div class="settings-item" id="btnOpenrouterKey">
         <div class="settings-icon">&#128273;</div>
-        <div class="settings-info"><div class="settings-name">OpenAI API Key</div><div class="settings-sub" id="openai-key-status">Nenastaveno</div></div>
+        <div class="settings-info"><div class="settings-name">OpenRouter API Key</div><div class="settings-sub" id="openrouter-key-status">Nenastaveno &mdash; chat nefunguje</div></div>
         <div class="settings-arrow">&rsaquo;</div>
       </div>
 
@@ -594,6 +594,12 @@ function sendMessage() {
   if (!text) return;
   var a = state.agents.find(function(x){ return x.id === currentChatId; });
   if (!a) return;
+
+  if (!state.apiKeys.openrouter) {
+    addAiMsg(a, 'Prosim nastav OpenRouter API klic v Nastaveni. Ziskej ho zdarma na openrouter.ai');
+    return;
+  }
+
   var userMsg = {role:'user',content:text,ts:Date.now()};
   a.messages.push(userMsg);
   state.messageCount++;
@@ -606,14 +612,23 @@ function sendMessage() {
   showTyping();
   var history = [];
   a.messages.slice(-20,-1).forEach(function(m){ history.push({role:m.role==='user'?'user':'assistant',content:m.content}); });
-  fetch('https://api.anthropic.com/v1/messages', {
+  fetch('https://openrouter.ai/api/v1/chat/completions', {
     method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:a.prompt,messages:history.concat([{role:'user',content:text}])})
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer ' + state.apiKeys.openrouter,
+      'HTTP-Referer':'https://tomikuwu.github.io',
+      'X-Title':'AI Hub'
+    },
+    body:JSON.stringify({
+      model: a.model === 'claude-sonnet-4-20250514' ? 'anthropic/claude-sonnet-4' : a.model,
+      messages: [{role:'system',content:a.prompt}].concat(history).concat([{role:'user',content:text}])
+    })
   }).then(function(r){ return r.json(); }).then(function(data){
-    addAiMsg(a, (data.content&&data.content[0]&&data.content[0].text) ? data.content[0].text : 'Omlouvam se, nastala chyba.');
+    var txt = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    addAiMsg(a, txt || 'Omlouvam se, nastala chyba.');
   }).catch(function(){
-    addAiMsg(a, 'Momentalne pracuji offline. Zkus to znovu za chvili.');
+    addAiMsg(a, 'Chyba pripojeni. Zkontroluj API klic v Nastaveni.');
   });
 }
 
@@ -835,9 +850,9 @@ document.getElementById('btnDeleteAgent').addEventListener('click', function(){
 document.getElementById('agentSheet').addEventListener('click', function(e){ if(e.target===this) closeSheet('agentSheet'); });
 document.getElementById('btnInstallSettings').addEventListener('click', function(){ openSheet('installSheet'); });
 document.getElementById('btnClearData').addEventListener('click', function(){ if(confirm('Opravdu smazat vsechna data?')){ localStorage.removeItem('aiws3'); location.reload(); } });
-document.getElementById('btnOpenaiKey').addEventListener('click', function(){
-  var k = prompt('OpenAI API klic:', state.apiKeys.openai||'');
-  if (k!==null){ if(k.trim()){state.apiKeys.openai=k.trim();document.getElementById('openai-key-status').textContent='Nastaveno ****'+k.slice(-4);}else{delete state.apiKeys.openai;document.getElementById('openai-key-status').textContent='Nenastaveno';} save(); }
+document.getElementById('btnOpenrouterKey').addEventListener('click', function(){
+  var k = prompt('OpenRouter API klic (ziskej na openrouter.ai/keys):', state.apiKeys.openrouter||'');
+  if (k!==null){ if(k.trim()){state.apiKeys.openrouter=k.trim();document.getElementById('openrouter-key-status').textContent='Nastaveno ****'+k.trim().slice(-4);}else{delete state.apiKeys.openrouter;document.getElementById('openrouter-key-status').textContent='Nenastaveno';} save(); toast(k.trim() ? '&#10003; OpenRouter klic ulozen' : 'Klic odstranen'); }
 });
 document.getElementById('btnGithubSettings').addEventListener('click', function(){
   var k = prompt('GitHub Personal Access Token\n(github.com/settings/tokens/new - zatrhnout "repo"):', state.ghToken||'');
@@ -853,7 +868,7 @@ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').
 window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt=e; document.getElementById('installSubText').textContent='Klikni pro primou instalaci!'; });
 
 // ── INIT ──
-if (state.apiKeys&&state.apiKeys.openai) document.getElementById('openai-key-status').textContent='Nastaveno ****'+state.apiKeys.openai.slice(-4);
+if (state.apiKeys&&state.apiKeys.openrouter) document.getElementById('openrouter-key-status').textContent='Nastaveno ****'+state.apiKeys.openrouter.slice(-4);
 if (state.ghToken) document.getElementById('ghTokenStatus').textContent='Nastaveno ****'+state.ghToken.slice(-4);
 if (state.ghRepo) document.getElementById('ghRepoStatus').textContent=state.ghRepo;
 renderHome();
