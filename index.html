@@ -9,7 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="AI Hub">
 <title>AI Workspace</title>
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0a0a0f;
@@ -31,7 +32,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Syne', 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Syne', sans-serif;
     min-height: 100dvh;
     overflow-x: hidden;
     padding-top: var(--safe-top);
@@ -778,14 +779,14 @@
 <!-- CONTENT -->
 <div class="content">
 
-  <!-- INSTALL BANNER - always visible -->
-  <div class="install-banner" id="installBanner" onclick="triggerInstall()">
+  <!-- INSTALL BANNER -->
+  <div class="install-banner" id="installBanner" style="display:none" onclick="triggerInstall()">
     <div class="install-banner-icon">📲</div>
     <div class="install-banner-text">
-      <div class="install-banner-title">Dát na plochu telefonu</div>
-      <div class="install-banner-sub" id="installSubText">Klikni pro návod nebo automatickou instalaci</div>
+      <div class="install-banner-title">Přidat na plochu</div>
+      <div class="install-banner-sub">Nainstaluj AI Hub jako aplikaci</div>
     </div>
-    <div style="background:var(--accent);color:#000;font-weight:800;font-size:12px;padding:7px 12px;border-radius:10px;white-space:nowrap;flex-shrink:0">Přidat →</div>
+    <button class="install-banner-close" onclick="event.stopPropagation();document.getElementById('installBanner').style.display='none'">✕</button>
   </div>
 
   <!-- HOME TAB -->
@@ -862,17 +863,19 @@
       <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Přizpůsob si workspace</div>
 
       <div class="section-label" style="margin-bottom:8px">Klíče API</div>
-
-      <div style="background:rgba(0,255,200,0.06);border:1px solid rgba(0,255,200,0.2);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.6">
-        ✅ <strong style="color:var(--accent)">Claude (Anthropic)</strong> funguje bez klíče — je zabudovaný.<br>
-        Pro ostatní modely (OpenAI, Groq) přidej svůj klíč níže.
-      </div>
-
       <div class="settings-item" onclick="promptApiKey('openai')">
         <div class="settings-icon">🔑</div>
         <div class="settings-info">
           <div class="settings-name">OpenAI API Key</div>
-          <div class="settings-sub" id="openai-key-status">Nenastaveno (volitelné)</div>
+          <div class="settings-sub" id="openai-key-status">Nenastaveno</div>
+        </div>
+        <div class="settings-arrow">›</div>
+      </div>
+      <div class="settings-item" onclick="promptApiKey('anthropic')">
+        <div class="settings-icon">🔑</div>
+        <div class="settings-info">
+          <div class="settings-name">Anthropic API Key</div>
+          <div class="settings-sub" id="anthropic-key-status">Nenastaveno</div>
         </div>
         <div class="settings-arrow">›</div>
       </div>
@@ -880,7 +883,7 @@
         <div class="settings-icon">🔑</div>
         <div class="settings-info">
           <div class="settings-name">Groq API Key</div>
-          <div class="settings-sub" id="groq-key-status">Nenastaveno (volitelné)</div>
+          <div class="settings-sub" id="groq-key-status">Nenastaveno</div>
         </div>
         <div class="settings-arrow">›</div>
       </div>
@@ -965,43 +968,6 @@
   <div class="chat-input-area">
     <textarea class="chat-input" id="chatInput" placeholder="Napiš zprávu…" rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
     <button class="send-btn" onclick="sendMessage()">↑</button>
-  </div>
-</div>
-
-<!-- ── INSTALL SHEET ── -->
-<div class="overlay" id="installSheet" onclick="closeSheet('installSheet')">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">📲 Přidat na plochu</div>
-    <div class="sheet-sub">Vyber svůj systém níže</div>
-
-    <div style="background:var(--card);border:1px solid rgba(0,255,200,0.2);border-radius:14px;padding:16px;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">🍎 iPhone / iPad (Safari)</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.8">
-        1. Otevři tento soubor v <strong style="color:var(--text)">Safari</strong><br>
-        2. Klikni na tlačítko <strong style="color:var(--text)">Sdílet</strong> (čtverec se šipkou nahoru) dole<br>
-        3. Vyber <strong style="color:var(--accent)">„Přidat na plochu"</strong><br>
-        4. Klikni <strong style="color:var(--text)">Přidat</strong> vpravo nahoře
-      </div>
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px">🤖 Android (Chrome)</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.8">
-        1. Otevři v <strong style="color:var(--text)">Chrome</strong><br>
-        2. Klikni na <strong style="color:var(--text)">⋮ menu</strong> vpravo nahoře<br>
-        3. Vyber <strong style="color:var(--accent)">„Přidat na plochu"</strong> nebo <strong style="color:var(--accent)">„Nainstalovat aplikaci"</strong><br>
-        4. Potvrď <strong style="color:var(--text)">Přidat</strong>
-      </div>
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);line-height:1.6">
-        💡 <strong style="color:var(--text)">Tip:</strong> Soubory (index.html, sw.js, manifest.json) musíš hostovat na serveru — například zdarma na <a href="https://app.netlify.com/drop" target="_blank" style="color:var(--accent)">netlify.com/drop</a> — přetáhni složku a dostaneš URL.
-      </div>
-    </div>
-
-    <button class="btn-secondary" onclick="closeSheet('installSheet')">Zavřít</button>
   </div>
 </div>
 
@@ -1150,25 +1116,18 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById('installSubText').textContent = '✓ Klikni pro přímou instalaci';
-});
-
-window.addEventListener('appinstalled', () => {
-  document.getElementById('installBanner').style.display = 'none';
+  document.getElementById('installBanner').style.display = 'flex';
 });
 
 function triggerInstall() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(r => {
-      if (r.outcome === 'accepted') {
-        deferredPrompt = null;
-        showToast('✓ AI Hub nainstalován!');
-      }
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('installBanner').style.display = 'none';
     });
   } else {
-    // Show step-by-step instructions sheet
-    openSheet('installSheet');
+    showToast('Otevři v prohlížeči → Sdílet → Přidat na plochu');
   }
 }
 
@@ -1209,23 +1168,20 @@ function getActiveAgent() {
 }
 
 function renderHome() {
-  try {
-    const active = getActiveAgent();
-    if (active) {
-      const av = document.getElementById('activeAvatar');
-      av.innerHTML = active.emoji + '<div class="status-dot"></div>';
-      document.getElementById('activeName').textContent = active.name;
-      document.getElementById('activeDesc').textContent = active.desc + ' · ' + active.source;
-    }
+  const active = getActiveAgent();
+  if (active) {
+    document.getElementById('activeAvatar').childNodes[0].nodeValue = active.emoji + ' ';
+    document.getElementById('activeName').textContent = active.name;
+    document.getElementById('activeDesc').textContent = active.desc + ' · ' + active.source;
+  }
 
-    document.getElementById('statAgents').textContent = state.agents.length;
-    document.getElementById('statMessages').textContent = state.messageCount;
-    document.getElementById('statGithub').textContent = state.githubCount;
+  document.getElementById('statAgents').textContent = state.agents.length;
+  document.getElementById('statMessages').textContent = state.messageCount;
+  document.getElementById('statGithub').textContent = state.githubCount;
 
-    const grid = document.getElementById('agentsGrid');
-    grid.innerHTML = '';
-    state.agents.slice(0, 4).forEach(a => grid.appendChild(buildAgentCard(a)));
-  } catch(e) { console.error('renderHome error:', e); }
+  const grid = document.getElementById('agentsGrid');
+  grid.innerHTML = '';
+  state.agents.slice(0, 4).forEach(a => grid.appendChild(buildAgentCard(a)));
 }
 
 function buildAgentCard(agent) {
@@ -1562,14 +1518,15 @@ async function sendMessage() {
 
   showTyping();
 
-  // Build message history (last 20, alternating user/assistant)
-  const rawHistory = agent.messages.slice(0, -1); // exclude the just-added user msg
-  const history = [];
-  for (const m of rawHistory.slice(-18)) {
-    history.push({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content });
-  }
-
+  // Call Claude API
   try {
+    const history = agent.messages.slice(-20).map(m => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.content
+    }));
+    // Remove last user message from history (we'll add it as the current message)
+    history.pop();
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1582,31 +1539,14 @@ async function sendMessage() {
     });
 
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
     const aiText = data.content?.[0]?.text || 'Omlouvám se, nastala chyba.';
     addAiMessage(agent, aiText);
   } catch (e) {
-    // Fallback: simulate response so the app is still usable
-    const fallback = await simulateResponse(agent, text);
-    addAiMessage(agent, fallback);
+    addAiMessage(agent, 'Nastala chyba při připojení k API. Zkontroluj připojení k internetu.');
   }
 }
 
-// Intelligent fallback when API unavailable
-async function simulateResponse(agent, userText) {
-  await new Promise(r => setTimeout(r, 800 + Math.random() * 600));
-  const lower = userText.toLowerCase();
-  if (lower.includes('ahoj') || lower.includes('čau') || lower.includes('hello') || lower.includes('hi')) {
-    return `Ahoj! Jsem **${agent.name}**. ${agent.desc}. Jak ti mohu pomoci? 😊`;
-  }
-  if (lower.includes('kód') || lower.includes('kod') || lower.includes('code') || lower.includes('program')) {
-    return `Rád ti pomůžu s kódem! Upřesni prosím:\n- Jaký programovací jazyk?\n- Co přesně potřebuješ napsat nebo opravit?`;
-  }
-  if (lower.includes('?')) {
-    return `To je zajímavá otázka! Jako **${agent.name}** se na to podívám. Mohl bys mi dát víc kontextu, abych ti mohl lépe odpovědět?`;
-  }
-  return `Rozumím. Jako **${agent.name}** ti s tím rád pomůžu. Řekni mi víc — co přesně potřebuješ?`;
-}
+function handleChatKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
@@ -1653,7 +1593,7 @@ function promptApiKey(provider) {
 }
 
 function loadApiKeyStatuses() {
-  ['openai','groq'].forEach(p => {
+  ['openai','anthropic','groq'].forEach(p => {
     if (state.apiKeys[p]) {
       document.getElementById(p + '-key-status').textContent = '●●●●●●●●' + state.apiKeys[p].slice(-4);
     }
