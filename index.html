@@ -440,7 +440,29 @@ body::before { content:''; position:fixed; inset:0; background: radial-gradient(
   </div>
 </div>
 
+<!-- DEBUG CONSOLE -->
+<div id="debugConsole" style="display:none;position:fixed;bottom:70px;left:0;right:0;height:200px;background:#000;border-top:2px solid #00ffc8;z-index:500;overflow-y:auto;font-family:'Space Mono',monospace;font-size:11px;padding:8px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;border-bottom:1px solid #333;padding-bottom:4px;">
+    <span style="color:#00ffc8;font-weight:700">DEBUG KONZOLE</span>
+    <button onclick="document.getElementById('debugConsole').style.display='none'" style="background:none;border:none;color:#ff6b6b;font-size:16px;cursor:pointer">✕</button>
+  </div>
+  <div id="debugLog"></div>
+</div>
+
+<button onclick="var d=document.getElementById('debugConsole');d.style.display=d.style.display==='none'?'block':'none'" style="position:fixed;bottom:80px;right:16px;z-index:499;background:#141428;border:1px solid #00ffc8;color:#00ffc8;border-radius:10px;padding:6px 12px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer">DEBUG</button>
+
 <script>
+function dbg(msg, color) {
+  var log = document.getElementById('debugLog');
+  if (!log) return;
+  var line = document.createElement('div');
+  line.style.color = color || '#e8e8f0';
+  line.style.marginBottom = '2px';
+  line.textContent = new Date().toLocaleTimeString('cs') + ' ' + msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+  document.getElementById('debugConsole').style.display = 'block';
+}
 var DEFAULT_AGENTS = [
   {id:'1',emoji:'&#129302;',name:'Claude Assistant',desc:'Univerzalni AI asistent',prompt:'Jsi chytry, pratelsky a uzitecny AI asistent. Odpovidej v jazyce uzivatele.',model:'claude-sonnet-4-20250514',source:'Anthropic',isActive:true,messages:[]},
   {id:'2',emoji:'&#128187;',name:'Code Helper',desc:'Pomoc s programovanim',prompt:'Jsi expert na programovani. Pomahas s kodem a architekturou. Vzdy poskytni cisty okomentovany kod.',model:'claude-sonnet-4-20250514',source:'Vlastni',isActive:false,messages:[]},
@@ -596,6 +618,7 @@ function sendMessage() {
   if (!a) return;
 
   if (!state.apiKeys.openrouter) {
+    dbg('CHYBA: OpenRouter klic neni nastaven!', '#ff6b6b');
     addAiMsg(a, 'Prosim nastav OpenRouter API klic v Nastaveni. Ziskej ho zdarma na openrouter.ai');
     return;
   }
@@ -610,6 +633,7 @@ function sendMessage() {
   input.value = '';
   input.style.height = 'auto';
   showTyping();
+  dbg('Posilam na OpenRouter, model: ' + (a.model === 'claude-sonnet-4-20250514' ? 'anthropic/claude-sonnet-4' : a.model), '#00ffc8');
   var history = [];
   a.messages.slice(-20,-1).forEach(function(m){ history.push({role:m.role==='user'?'user':'assistant',content:m.content}); });
   fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -624,11 +648,16 @@ function sendMessage() {
       model: a.model === 'claude-sonnet-4-20250514' ? 'anthropic/claude-sonnet-4' : a.model,
       messages: [{role:'system',content:a.prompt}].concat(history).concat([{role:'user',content:text}])
     })
-  }).then(function(r){ return r.json(); }).then(function(data){
+  }).then(function(r){
+    dbg('HTTP status: ' + r.status, r.ok ? '#00ffc8' : '#ff6b6b');
+    return r.json();
+  }).then(function(data){
+    dbg('Response: ' + JSON.stringify(data).substring(0,100), '#b19cd9');
     var txt = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    addAiMsg(a, txt || 'Omlouvam se, nastala chyba.');
-  }).catch(function(){
-    addAiMsg(a, 'Chyba pripojeni. Zkontroluj API klic v Nastaveni.');
+    addAiMsg(a, txt || 'Omlouvam se, nastala chyba: ' + JSON.stringify(data).substring(0,80));
+  }).catch(function(e){
+    dbg('FETCH CHYBA: ' + e.message, '#ff6b6b');
+    addAiMsg(a, 'Chyba pripojeni: ' + e.message);
   });
 }
 
