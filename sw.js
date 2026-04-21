@@ -1,19 +1,17 @@
-const CACHE_NAME = 'ai-workspace-v1';
-const ASSETS = [
-  '/index.html',
-];
+const CACHE = 'ai-hub-v3';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => caches.delete(k)))
+    ).then(() => clients.claim())
+  );
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/index.html')))
-  );
+  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
 });
