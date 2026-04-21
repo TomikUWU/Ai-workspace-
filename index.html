@@ -1113,7 +1113,7 @@
         <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (Anthropic)</option>
         <option value="gpt-4o">GPT-4o (OpenAI)</option>
         <option value="gpt-4o-mini">GPT-4o Mini (OpenAI)</option>
-        <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Groq)</option>
+        <option value="llama-3.3-70b-versatile" selected>Llama 3.3 70B (Groq)</option>
         <option value="mixtral-8x7b-32768">Mixtral 8x7B (Groq)</option>
         <option value="gemma2-9b-it">Gemma 2 9B (Groq)</option>
       </select>
@@ -1201,7 +1201,7 @@ let state = JSON.parse(localStorage.getItem('aiworkspace') || 'null') || {
       name: 'Claude Assistant',
       desc: 'Univerzální AI asistent',
       prompt: 'Jsi chytrý, přátelský a užitečný AI asistent. Odpovídáš v jazyce uživatele.',
-      model: 'claude-sonnet-4-20250514',
+      model: 'llama-3.3-70b-versatile',
       source: 'Anthropic',
       isActive: true,
       messages: []
@@ -1212,7 +1212,7 @@ let state = JSON.parse(localStorage.getItem('aiworkspace') || 'null') || {
       name: 'Code Helper',
       desc: 'Pomoc s programováním',
       prompt: 'Jsi expert na programování. Pomáháš s kódem, debugováním a architekturou. Vždy poskytni čistý, okomentovaný kód.',
-      model: 'claude-sonnet-4-20250514',
+      model: 'llama-3.3-70b-versatile',
       source: 'Vlastní',
       isActive: false,
       messages: []
@@ -1223,7 +1223,7 @@ let state = JSON.parse(localStorage.getItem('aiworkspace') || 'null') || {
       name: 'Writer',
       desc: 'Kreativní psaní a texty',
       prompt: 'Jsi kreativní spisovatel a copywriter. Pomáháš s texty, články, příběhy a marketingovými materiály.',
-      model: 'claude-sonnet-4-20250514',
+      model: 'llama-3.3-70b-versatile',
       source: 'Vlastní',
       isActive: false,
       messages: []
